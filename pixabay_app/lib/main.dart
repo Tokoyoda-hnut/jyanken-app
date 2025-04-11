@@ -26,15 +26,27 @@ class PixabayPage extends StatefulWidget {
 
 class _PixabayPageState extends State<PixabayPage> {
   //はじめはからのリストを入れておく
-  List hits = [];
+  List<PixabayImage>  pixabayImages = [];
 
   Future<void> fetchImages(String text) async {
     final Response response = await Dio().get(
-      'https://pixabay.com/api/?key=49704360-58b27d86557b88ec6ee3cc7f4&q=$text&image_type=photo&pretty=true&per_page=100',
+      'https://pixabay.com/api',
+      queryParameters : {
+        'key' : '49704360-58b27d86557b88ec6ee3cc7f4',
+        'q' : text,
+        'image_type': 'photo',
+        'per_page' : 100,
+     // /?key=49704360-58b27d86557b88ec6ee3cc7f4&q=$text&image_type=photo&pretty=true&per_page=100',
+      },
     );
-    int total = response.data['total'];
-    hits = response.data['hits'];
-    print(total);
+    final List hits = response.data['hits'];
+    print('取得件数: ${hits.length}'); // ← ここ追加！
+
+    pixabayImages = hits.map(
+        (e) {
+        return PixabayImage.formMap(e);
+    }, 
+    ).toList();
     setState(() {});
   }
 
@@ -81,17 +93,19 @@ class _PixabayPageState extends State<PixabayPage> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
         ),
-        itemCount: hits.length,
+        itemCount: pixabayImages.length,
         itemBuilder: (context, index) {
-          Map<String, dynamic> hit = hits[index];
+          final  pixabayImage = pixabayImages[index];
           //return Text(index.toString());
           return InkWell(
             onTap: () async {
-              shareImage(hit['webformatURL']);
+              shareImage(pixabayImage.webformatURL);
             },
             child: Stack(
               children: [
-                Image.network(hit['previewURL'], fit: BoxFit.cover),
+                Image.network(
+                    pixabayImage.previewURL, 
+                    fit: BoxFit.cover),
                 Align(
                   alignment: Alignment.bottomRight,
                   child: Container(
@@ -99,7 +113,7 @@ class _PixabayPageState extends State<PixabayPage> {
                     child: Row(
                       children: [
                         Icon(Icons.thumb_up_outlined, size: 14),
-                        Text('${hit['likes']}'),
+                        Text('${pixabayImage.likes}'),
                       ],
                     ),
                   ),
