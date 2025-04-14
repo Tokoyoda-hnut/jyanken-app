@@ -51,7 +51,30 @@ class _LifeCounterPageState extends State<LifeCounterPage> {
         itemCount: lifeEvents.length,
         itemBuilder: (context, index) {
           final lifeEvent = lifeEvents[index];
-          return Text(lifeEvent.title);
+          return Row(
+            children: [
+              SizedBox(
+                width: 240,
+                child: Text(lifeEvent.title),
+              ),
+              Text('${lifeEvent.count}'),
+              IconButton(
+                onPressed: (){
+                  lifeEvent.count++;
+                  lifeEventBox?.put(lifeEvent);
+                  fetchLifeEvents();
+                },
+                icon: const Icon(Icons.plus_one),
+              ),
+              IconButton(
+                onPressed: (){
+                  lifeEventBox?.remove(lifeEvent.id);
+                  fetchLifeEvents();
+                },
+                icon: const Icon(Icons.delete),
+              )
+            ],
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
